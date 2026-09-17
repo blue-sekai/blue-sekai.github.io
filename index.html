@@ -64,7 +64,7 @@
     position: fixed; inset: 0;
     z-index: -1;
     background:
-      radial-gradient(120% 90% at 50% 15%, rgba(8,10,20,.35), rgba(6,8,16,.72) 65%),
+      radial-gradient(120% 90% at 50% 15%, rgba(8,10,20,.35), rgba(6,8,16,.72) 100%),
       linear-gradient(rgba(6,8,16,.35), rgba(6,8,16,.55));
   }
 
@@ -85,21 +85,52 @@
     box-shadow: 0 20px 60px rgba(0,0,0,.35);
   }
 
+  /* ---------- avatar + decoration ----------
+     The DECORATION is the thing that sets the size here, not the avatar.
+     Discord decoration art is drawn right out to the edge of its own square
+     canvas, with a transparent "hole" in the middle sized at roughly 78% of
+     that canvas. So: the wrapper is the full decoration square, and the
+     avatar is inset to --avatar-fit inside it. Nudge --avatar-fit down if the
+     ring still overlaps the photo, or up if the photo looks too small. */
   .avatar-ring {
-    width: 108px; height: 108px;
+    --deco-size:  132px;   /* outer size of the decoration square */
+    --avatar-fit: 84%;     /* how much of that square the photo fills */
+
+    position: relative;
+    width: var(--deco-size);
+    height: var(--deco-size);
     margin: 0 auto 1rem;
-    border-radius: 50%;
-    padding: 4px;
-    background: var(--panel-inner);
-    box-shadow: 0 0 0 1px var(--border), 0 0 36px 2px var(--status-color, var(--offline));
+    overflow: visible;     /* never crop the decoration */
     transition: box-shadow .4s;
   }
-  .avatar-ring img {
-    width: 100%; height: 100%;
+  /* the photo, centred inside the decoration's hole */
+  .avatar-ring > img {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: var(--avatar-fit);
+    height: var(--avatar-fit);
     border-radius: 50%;
     object-fit: cover;
     display: block;
+    z-index: 1;
   }
+  .avatar-decoration {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 2;
+  }
+  .avatar-decoration img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  .avatar-decoration[hidden] { display: none; }
+
+  /* no decoration? then the photo can use the whole box again */
+  .avatar-ring:has(.avatar-decoration[hidden]) { --avatar-fit: 100%; }
 
   .name {
     margin: 0;
@@ -229,6 +260,9 @@
 <main class="card">
   <div class="avatar-ring" id="avatar-ring">
     <img id="avatar" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" />
+    <div class="avatar-decoration" id="avatar-decoration" hidden>
+      <img id="decoration-img" alt="" />
+    </div>
   </div>
 
   <h1 class="name" id="display-name">bluesekai</h1>
@@ -367,6 +401,7 @@ function render(d) {
   state = d;
   const user = d.discord_user;
   const url = avatarURL(user);
+  
 
   // main hero avatar (only set once so it doesn't flicker on every update)
   if (els.avatar.dataset.set !== "1") {
@@ -380,13 +415,23 @@ function render(d) {
   els.pDot.dataset.status = d.discord_status;
   els.pName.textContent = user.display_name || user.global_name || user.username;
 
-  const custom = d.activities.find((a) => a.type === 4);
-  if (custom) {
-    els.pCustom.hidden = false;
-    els.pCustom.textContent = [custom.emoji?.name, custom.state].filter(Boolean).join(" ");
+  const deco = user.avatar_decoration_data;
+  if (deco?.asset) {
+    // size=160 gives a sharper asset than the default; drop passthrough=true
+    // (or set it to false) if you'd rather have the static, non-animated frame
+    $("decoration-img").src =
+      `https://cdn.discordapp.com/avatar-decoration-presets/${deco.asset}.png?size=160&passthrough=true`;
+    $("avatar-decoration").hidden = false;
   } else {
-    els.pCustom.hidden = true;
+    $("avatar-decoration").hidden = true;
   }
+
+  const custom = d.activities.find((a) => a.type === 4);
+  const statusLabel = { online: "Online", idle: "Idle", dnd: "Do Not Disturb", offline: "Offline" }[d.discord_status] || "Offline";
+  els.pCustom.hidden = false;
+  els.pCustom.textContent = custom
+    ? [custom.emoji?.name, custom.state].filter(Boolean).join(" ")
+    : statusLabel;
 
   if (d.listening_to_spotify && d.spotify) {
     els.npContent.hidden = false;
