@@ -11,7 +11,7 @@
 
 <style>
   :root {
-    --panel:        rgba(18, 21, 36, .01);
+    --panel:        rgba(18, 21, 36, .55);
     --panel-inner:  rgba(255, 255, 255, .06);
     --border:       rgba(255, 255, 255, .10);
     --text:         #f5f6fb;
@@ -325,21 +325,22 @@
 <script>
 /* ================= Discord + Spotify presence via Lanyard =================
    1. Enable Developer Mode in Discord -> right click yourself -> Copy User ID
-   2. Join discord.gg/lanyard so the bot can see your presence
+   2. Join discord.gg/lanyard (needed even when self-hosting, so the public
+      fallback below still works if your own box is offline)
    3. Paste your ID below                                                    */
-const DISCORD_ID = "897268744882118656";
+const DISCORD_ID = "000000000000000000";
 
 // Your Tailscale Funnel URL, no trailing slash -- e.g. https://mybox.tailxxxx.ts.net
 const SELF_HOST = "https://yourmachine.your-tailnet.ts.net";
 const PUBLIC_HOST = "https://api.lanyard.rest";
- 
+
 function hostURLs(host) {
   return {
     rest: `${host}/v1/users/${DISCORD_ID}`,
     socket: host.replace(/^https/, "wss") + "/socket",
   };
 }
- 
+
 let activeHost = SELF_HOST; // flips to PUBLIC_HOST automatically if self-host is unreachable
 
 const $ = (id) => document.getElementById(id);
