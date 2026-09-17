@@ -230,8 +230,8 @@
     <img id="avatar" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" />
   </div>
 
-  <h1 class="name">Your Name</h1>
-  <p class="bio">
+  <h1 class="name" id="display-name">Your Name</h1>
+  <p class="bio" id="display-bio">
     A longer bio goes here &mdash; a couple sentences about who you are, what
     you're working on, or whatever you want people to read first.
   </p>
@@ -441,6 +441,22 @@ async function fallback() {
   }
 }
 
+async function loadProfile() {
+  try {
+    const res = await fetch("profile.json", { cache: "no-store" });
+    if (!res.ok) throw new Error(res.status);
+    const profile = await res.json();
+    if (profile.name) {
+      $("display-name").textContent = profile.name;
+      document.title = profile.name;
+    }
+    if (profile.bio) $("display-bio").textContent = profile.bio;
+  } catch (err) {
+    console.error("couldn't load profile.json, using the text baked into the HTML instead", err);
+  }
+}
+
+loadProfile();
 fallback();
 connect();
 setInterval(tick, 1000);
