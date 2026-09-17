@@ -34,11 +34,6 @@
 
   * { box-sizing: border-box; }
 
-  /* ---------- FIX: html,body{height:100%} + align-items:center used to push
-     the top of an overflowing card above the viewport with no way to scroll
-     up to it -- exactly the cut-off-on-a-3:2-screen bug. min-height instead
-     of height lets the page grow and scroll normally when the card is taller
-     than the viewport. ---------- */
   body {
     margin: 0;
     min-height: 100vh;
@@ -50,10 +45,7 @@
     padding: 2.5rem 1.25rem;
     position: relative;
   }
-
-  /* ---------- background media ----------
-     Swap the src below for your own high-res gif/image/video.
-     object-fit: cover keeps it filling the viewport at any aspect ratio. */
+  
   .bg {
     position: fixed; inset: 0;
     width: 100%; height: 100%;
@@ -85,15 +77,8 @@
     box-shadow: 0 20px 60px rgba(0,0,0,.35);
   }
 
-  /* ---------- avatar + decoration ----------
-     The DECORATION is the thing that sets the size here, not the avatar.
-     Discord decoration art is drawn right out to the edge of its own square
-     canvas, with a transparent "hole" in the middle sized at roughly 78% of
-     that canvas. So: the wrapper is the full decoration square, and the
-     avatar is inset to --avatar-fit inside it. Nudge --avatar-fit down if the
-     ring still overlaps the photo, or up if the photo looks too small. */
   .avatar-ring {
-    --deco-size:  132px;   /* outer size of the decoration square */
+    --deco-size:  132px;
     --avatar-fit: 84%;     /* how much of that square the photo fills */
 
     position: relative;
@@ -403,10 +388,8 @@
 </main>
 
 <script>
-/* ================= Discord + Spotify presence via Lanyard =================
-   1. Enable Developer Mode in Discord -> right click yourself -> Copy User ID
-   2. Join discord.gg/lanyard so the bot can see your presence
-   3. Paste your ID below                                                    */
+
+
 const DISCORD_ID = "897268744882118656";
 
 const REST = `https://api.lanyard.rest/v1/users/${DISCORD_ID}`;
